@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:nano",
+    "configuration": "cpu=atmega328",
+    "port": "COM10",
+    "sketch": "BoosterPump_Buttons-LCD-EEPROM_MQTT_2018.05.06.ino"
+}

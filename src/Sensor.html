@@ -1,0 +1,171 @@
+  <!-- EspLink will add header here -->
+  
+  <style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: left;    
+}
+</style>
+  
+  <!-- <meta name="refresh-rate" content="100" /> -->
+  
+  
+  <div class="header">
+    <h1>SENSOR</h1>
+  </div>
+  
+  
+  <!-- <div><input id="pressure" type="text" name="pressure"></div> -->
+
+  <div class="content">
+    <!-- <p hidden id="pressure" align="center" style="font-size: 800%"/> -->
+	<!-- <p hidden id="pressNearZero" align="center" style="font-size: 800%"/> -->
+	<!-- <p hidden id="pressLow" align="center" style="font-size: 800%"/> -->
+	<!-- <p hidden id="pressHigh" align="center" style="font-size: 800%"/> -->
+	<div id="chart_div" align="center" style="width: 100%; height: 100%;"></div>
+
+    <table class="pure-table pure-table-bordered" align="center" id="table"/>
+	
+
+<table id="table2" align="center">
+  <tr>    
+    <th>Min</th>
+    <th>cut ON</th>
+	<th style="color: red;">Pressure</th>
+	<th>cut OFF</th>
+	<th style="color: red;">Irms</th>
+  </tr>
+  <tr>    
+    <td><span id="pZero"></span></td>
+    <td><span id="cutOn"></span></td>
+	<td><span id="p" style="color: red;"></span></td>
+	<td><span id="cutOff"></span></td>
+	<td><span id="Irms" style="color: red;"></span></td>
+  </tr>
+</table>
+
+  </div>
+  
+       <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+   <script type="text/javascript">
+      google.charts.load('current', {'packages':['gauge']});
+      google.charts.setOnLoadCallback(drawChart);
+
+	var Irms;
+	var pressure;
+	var pZero;
+	var cutOn;
+	var cutOff;
+	var maxGaugePressure = 2.0;
+	
+	function drawChart() {
+		var data = google.visualization.arrayToDataTable([
+		  ['Label', 'Value'],
+		  ['Bar', 0.0],
+		]);
+		
+		var options = {
+		  //height: 400,
+		  //yellowFrom: minGaugePressure, yellowTo: 0.1,
+		  //greenFrom: 0.1,
+		  //greenTo: 1.0,
+		  //redFrom: 1.0,
+		  //redTo: maxGaugePressure,
+		  //yellowFrom:75, yellowTo: 90,
+		  min:0, max:maxGaugePressure,
+		  majorTicks: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, maxGaugePressure],
+		  //majorTicks: ['-0.2', '0.0', '0.2', '0.4', '0.6', '0.8', '1.0', '1.2', '1.4'],
+		  //majorTicks: ['A', 'B', 'C', 'D', 'E'],
+		  minorTicks: 2,
+		  animation:{
+			duration: 200,
+			easing: 'inAndOut',
+		  },
+		};		
+	
+		var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+		
+		//data.setValue(0, 1, pressure);
+		chart.draw(data, options);
+		
+		// setInterval(function() {
+			// data.setValue(0, 1, pressure);
+			// chart.draw(data, options);
+		// }, 200);
+		
+	  // function to change data & options
+	  updateGauge = function() {
+		  // update gauge data
+		  data.setValue(0, 1, pressure);	
+		  
+		  // update gauge options
+		  options.redFrom = 0;
+		  options.redTo = pZero;
+		  options.greenFrom = pZero;
+		  options.greenTo = cutOff;
+		  options.yellowFrom = cutOff;		  
+		  options.yellowTo = maxGaugePressure;
+		   // call draw() with new data & options 
+		  chart.draw(data, options);
+	  }
+	}
+	  
+//window.onload = function () {
+  //getConfigValues("/Pressure.html");
+  //startSocket();
+  //startEvents();
+//}
+
+//getConfigValues("/Pressure.html");
+//setInterval(getConfigValues("/Pressure.html"), 100);
+setInterval(getConfigValues, 200, "/Sensor.html.json?reason=load")
+  
+function getConfigValues(address) {
+	var req = new XMLHttpRequest();
+	if (req) {
+	req.open("GET", address, true);
+	req.addEventListener("load", reqListener);
+	req.send();
+	}
+}
+
+function reqListener () {
+  // console.log(this.responseText);
+  var json = JSON.parse(this.responseText);
+  if (json)
+  {	  
+	json = JSON.parse(this.responseText);
+	console.log(json);
+	Irms = parseFloat(json.Irms).toFixed(2);
+	pressure = parseFloat(json.p).toFixed(2);
+	pZero = parseFloat(json.pZero).toFixed(2);
+	cutOn = parseFloat(json.cutOn).toFixed(2);
+	cutOff = parseFloat(json.cutOff).toFixed(2);
+	//console.log(pressure, pZero, cutOn, cutOff);
+	document.getElementById("Irms").textContent = Irms;
+	document.getElementById("p").textContent = pressure;
+	document.getElementById("pZero").textContent = pZero;
+	document.getElementById("cutOn").textContent = cutOn;
+	document.getElementById("cutOff").textContent = cutOff;
+	
+	updateGauge();
+
+	// something();
+  }
+}
+
+  // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
+  function isJSON(str) {
+    try {
+        return (JSON.parse(str) && !!str);
+    } catch (e) {
+        return false;
+    }
+  }
+    </script>
+  
+</body></html>
