@@ -1,3 +1,6 @@
+#ifndef progmemhelper_h
+#define progmemhelper_h
+
 //const char pgm_garis_batas[] PROGMEM = " | ";
 
 //const char pgm_table_header[] PROGMEM = "[[\"Time\",\"Min\",\"Avg\",\"Max\"]";
@@ -64,7 +67,6 @@ const char* const PAYLOAD_TABLE[] PROGMEM =
   CONNECTED   //4
 };
 
-
 const char STS_mqttCONNECTED [] PROGMEM             = "sts/boosterpump/mqttstatus";
 const char STS_statepump [] PROGMEM                 = "sts/boosterpump/statepump";
 const char STS_stateError1 [] PROGMEM               = "sts/boosterpump/stateError1";
@@ -104,4 +106,8 @@ const char* const SUBSCRIBE_TOPIC_TABLE[] PROGMEM =
 {
   CB_SUBSCRIBEMQTTTOPIC,  //0
 };
+
+#endif
+
+
 

@@ -1,5 +1,8 @@
-#include <ELClientWebServer.h>
+// #include <ELClientWebServer.h>
+#include "webserver.h"
 #include <avr/io.h>
+#include "currentsensor.h"
+#include "pressuresensor.h"
 
 // sprintf %f is not supported on Arduino...
 char* floatToString(float f)
