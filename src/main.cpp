@@ -20,27 +20,14 @@ const byte backlight = 10;
 const byte relayPump = 11;
 const byte buzzer = 12;
 
-
-
 /*--- Logic variables ---*/
-
-
-
-
-
-
-
-
 
 uint32_t timerThresholdLOW = 0;
 uint32_t timerThresholdHIGH = 300;
 
 bool stateBuzzer;
 
-
 float pressureBeforePumpON;
-
-
 
 // Counter variables
 int count0; // counter for averaging sum pressure head
@@ -58,17 +45,12 @@ bool oldstateBacklight;
 //const bool NOT_INSTALLED = 0;
 //const bool INSTALLED = 1;
 
-
-
 bool PRESSURE_DIRECTION;
-
-
 
 // Callback made from esp-link to notify of wifi status changes
 // Here we just print something out for grins
 
 //boolean wifiConnected = false;
-
 
 void wifiCb(void *response)
 {
@@ -87,7 +69,7 @@ void wifiCb(void *response)
 
       if (wifiStatus == 0)
       {
-        Serial.println(F("STATION_IDLE"));
+        // Serial.println(F("STATION_IDLE"));
       }
       else if (wifiStatus == STATION_GOT_IP)
       {
@@ -95,27 +77,23 @@ void wifiCb(void *response)
       }
       else if (wifiStatus == STATION_CONNECTING)
       {
-        Serial.println(F("STATION_CONNECTING"));
+        // Serial.println(F("STATION_CONNECTING"));
       }
       else if (wifiStatus == STATION_WRONG_PASSWORD)
       {
-        Serial.println(F("STATION_WRONG_PASSWORD"));
+        // Serial.println(F("STATION_WRONG_PASSWORD"));
       }
       else if (wifiStatus == STATION_NO_AP_FOUND)
       {
-        Serial.println(F("STATION_NO_AP_FOUND"));
+        // Serial.println(F("STATION_NO_AP_FOUND"));
       }
       else if (wifiStatus == STATION_CONNECT_FAIL)
       {
-        Serial.println(F("STATION_CONNECT_FAIL"));
+        // Serial.println(F("STATION_CONNECT_FAIL"));
       }
     }
   }
 }
-
-
-
-
 
 // Callback made form esp-link to notify that it has just come out of a reset. This means we
 // need to initialize it!
@@ -143,14 +121,7 @@ void resetCb(void)
   webServer.setup();
 }
 
-
-
-
-
-
-
 time_t prevDisplay = 0; // when the digital clock was displayed
-
 
 void RESET_ALL()
 {
@@ -222,10 +193,6 @@ void RESET_ALL()
 //  return MPa * 10.0;                                // 1 MPa = 10.0 Bar
 //}
 
-
-
-
-
 // void MqttStatus()
 // {
 //   if (mqttconnected) {
@@ -238,8 +205,6 @@ void RESET_ALL()
 //     mqtt.publish(TOPIC_BUF, buf, 0, 0);
 //   }
 // }
-
-
 
 // void MqttStateError1()
 // {
@@ -491,16 +456,15 @@ void display_srcfile_details(void)
     else
       break;
   }
+
   Serial.println();
 
-  Serial.print(F("Compiled on: "));
-  Serial.print(__DATE__);
-  Serial.print(F(" at "));
-  Serial.println(__TIME__);
-  Serial.println();
+  // Serial.print(F("Compiled on: "));
+  // Serial.print(__DATE__);
+  // Serial.print(F(" at "));
+  // Serial.println(__TIME__);
+  // Serial.println();
 }
-
-
 
 void setup()
 {
@@ -614,6 +578,8 @@ void setup()
   }
 
   CURRENT_SENSOR_INSTALLED = EEPROM.readInt(mem_address_current_sensor_installed);
+  CURRENT_SENSOR_INSTALLED = 0;
+
   pressure_NEAR_ZERO = EEPROM.readFloat(mem_address_pressure_NEAR_ZERO);
   pressure_LOW = EEPROM.readFloat(mem_address_pressure_LOW);
   pressure_HIGH = EEPROM.readFloat(mem_address_pressure_HIGH);
@@ -633,14 +599,8 @@ void setup()
   dtostrf(pressure, 0, 2, bufPressure);
 }
 
-
-
-
-
 //static int count;
 //static uint32_t last;
-
-
 
 //byte TIMESTATUS;
 
@@ -689,7 +649,6 @@ void loop()
   }
 
   ProcessLCD();
-
 
   /*------------- START processing Pressure Head --------------*/
 
@@ -1355,5 +1314,3 @@ void loop()
     }
   }
 }
-
-
