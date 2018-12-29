@@ -1,3 +1,3 @@
 #include "elclientcmdhelper.h"
 
-extern ELClientCmd cmd(&esp);
+ELClientCmd cmd(&esp);

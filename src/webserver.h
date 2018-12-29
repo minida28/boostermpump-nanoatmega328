@@ -8,9 +8,10 @@
 // Initialize the Web-Server client
 extern ELClientWebServer webServer;
 
-extern bool monitorError1;
+void SettingsLoadAndRefreshCb(char *url);
+void SensorPageButtonPressCb(char *btnId);
+void SettingsSubmitCb(char *field);
 
-void ledPageLoadAndRefreshCb(char *url);
-void ledButtonPressCb(char *btnId);
+void WebserverHandlerInit();
 
 #endif

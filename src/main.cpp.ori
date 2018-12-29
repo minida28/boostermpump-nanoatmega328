@@ -33,7 +33,9 @@ int count0; // counter for averaging sum pressure head
 int count1; // counter for comparing current pressure and old pressure
 //int countSamplingCurrent;
 
-
+// Error Variables
+bool stateError, stateError1, stateError2, stateError3, stateError4, stateError5;
+bool oldstateError, oldstateError1, oldstateError2, oldstateError3, oldstateError4, oldstateError5;
 
 // LCD Backlight Variable
 bool stateBacklight;
@@ -55,7 +57,7 @@ void wifiCb(void *response)
   if (res->argc() == 1)
   {
     //uint8_t status;
-    res->popArg(&wifiStatus, 4);
+    res->popArg(&wifiStatus, 1);
 
     if (wifiStatus != wifiStatus_old)
     {
@@ -124,7 +126,7 @@ void RESET_ALL()
 {
   digitalClockDisplay();
   Serial.println(F("*** R  E  S  E  T ***"));
-  timer1 = millis();
+  //timer1 = millis(); DO NOT RESET, THIS IS FOR AVERAGING PRESSURE
   timer2 = millis();
   timer3 = millis();
   timer4 = millis();
@@ -135,27 +137,25 @@ void RESET_ALL()
   timer9 = millis();
   timer10 = millis();
   timer11 = millis();
-  count0 = 0;
-  count1 = 0;
   stateError = LOW;
-  // oldstateError = stateError;
+  oldstateError = stateError;
   stateError1 = LOW;
-  // oldstateError1 = stateError1;
+  oldstateError1 = stateError1;
   stateError2 = LOW;
-  // oldstateError2 = stateError2;
+  oldstateError2 = stateError2;
   stateError3 = LOW;
-  // oldstateError3 = stateError3;
+  oldstateError3 = stateError3;
   stateError4 = LOW;
-  // oldstateError4 = stateError4;
+  oldstateError4 = stateError4;
   stateError5 = LOW;
-  // oldstateError5 = stateError5;
+  oldstateError5 = stateError5;
   digitalWrite(buzzer, LOW);
   statePump = LOW;
-  // oldstatePump = statePump;
+  oldstatePump = statePump;
   statePressure = NORMAL_PRESSURE;
-  // oldstatePressure = statePressure;
+  oldstatePressure = statePressure;
   stateCurrent = CURRENT_NORMAL;
-  // oldstateCurrent = stateCurrent;
+  oldstateCurrent = stateCurrent;
 }
 
 /*
@@ -280,32 +280,26 @@ void RESET_ALL()
 //   }
 // }
 
-// void buzzerError()
-// {
-
-//   uint32_t timeBuzzerON = 900;
-//   uint32_t timeBuzzerOFF = 100;
-
-//   static uint32_t previousMillisBuzzer = 0;
-
-//   if (stateBuzzer == HIGH && millis() - previousMillisBuzzer >= timeBuzzerOFF)
-//   {
-//     digitalWrite(buzzer, LOW);       // Turn on Solenoid Valve
-//     stateBuzzer = LOW;               // Update the state
-//     previousMillisBuzzer = millis(); // Remember the time
-//   }
-//   if (stateBuzzer == LOW && millis() - previousMillisBuzzer >= timeBuzzerON)
-//   {
-//     digitalWrite(buzzer, HIGH);      // Turn on Solenoid Valve
-//     stateBuzzer = HIGH;              // Update the state
-//     previousMillisBuzzer = millis(); // Remember the time
-//   }
-// }
-
 void buzzerError()
 {
-  unsigned int freq = 2550; //4750
-  tone(buzzer, freq, 400);
+
+  uint32_t timeBuzzerON = 900;
+  uint32_t timeBuzzerOFF = 100;
+
+  static uint32_t previousMillisBuzzer = 0;
+
+  if (stateBuzzer == HIGH && millis() - previousMillisBuzzer >= timeBuzzerOFF)
+  {
+    digitalWrite(buzzer, LOW);       // Turn on Solenoid Valve
+    stateBuzzer = LOW;               // Update the state
+    previousMillisBuzzer = millis(); // Remember the time
+  }
+  if (stateBuzzer == LOW && millis() - previousMillisBuzzer >= timeBuzzerON)
+  {
+    digitalWrite(buzzer, HIGH);      // Turn on Solenoid Valve
+    stateBuzzer = HIGH;              // Update the state
+    previousMillisBuzzer = millis(); // Remember the time
+  }
 }
 
 void printPressure()
@@ -494,7 +488,7 @@ void setup()
   // Sync-up with esp-link, this is required at the start of any sketch and initializes the
   // callbacks to the wifi status change callback. The callback gets called with the initial
   // status right after Sync() below completes.
-  esp.wifiCb.attach(&wifiCb); // wifi status change callback, optional (delete if not desired)
+  esp.wifiCb.attach(wifiCb); // wifi status change callback, optional (delete if not desired)
 
   esp.resetCb = resetCb;
 
@@ -503,8 +497,6 @@ void setup()
   //esp.resetCb = resetCb;
 
   resetCb();
-
-  esp.GetWifiStatus();
 
   // Set-up callbacks for events and initialize with es-link.
   mqtt.connectedCb.attach(mqttConnected);
@@ -612,20 +604,14 @@ void setup()
 
 //byte TIMESTATUS;
 
-bool tick1000ms = false;
-
 void loop()
 {
   esp.Process();
-
-  tick1000ms = false;
 
   if (now() != prevDisplay)
   { //update the display only if time has changed
 
     prevDisplay = now();
-
-    tick1000ms = true;
 
     static uint8_t timeStatus_old = timeStatus();
     if (timeStatus() != timeStatus_old)
@@ -711,187 +697,291 @@ void loop()
 
   if (MODE == AUTOMATIC)
   {
-    if (statePressure != oldstatePressure)
+
+    switch (stateError)
     {
 
-      oldstatePressure = statePressure;
+    //IF ERROR STATE IS LOW
+    case LOW:
+      //digitalWrite(buzzer, LOW);
+
+      //      //if (statePressure != oldstatePressure && statePressure != NORMAL_PRESSURE) {
+      //      if (statePressure != oldstatePressure) {
+      //
+      //        oldstatePressure = statePressure;
+      //
+      //        if (statePressure == UNDER_PRESSURE) {
+      //          timer3 = millis();
+      //          //oldstatePressure = statePressure;
+      //          //Serial.println("> Pressure BELOW threshold, waiting to make sure...");
+      //        }
+      //        else if (statePressure == OVER_PRESSURE) {
+      //          timer4 = millis();
+      //          //oldstatePressure = statePressure;
+      //          //Serial.println("> Pressure ABOVE threshold, waiting to make sure...");
+      //        }
+      //        else if (statePressure == NEAR_ZERO_PRESSURE) {
+      //          timer5 = millis();
+      //          //oldstatePressure = statePressure;
+      //          //Serial.println("> Pressure ABOVE threshold, waiting to make sure...");
+      //        }
+      //        else if (statePressure == NORMAL_PRESSURE) {
+      //          if (oldstatePressure == UNDER_PRESSURE) {
+      //            if (millis() - timer3 < timerThresholdLOW) {
+      //              timer3 = millis();
+      //            }
+      //            else if (millis() - timer4 < timerThresholdHIGH) {
+      //              timer4 = millis();
+      //            }
+      //          }
+      //
+      //        }
+      //      }
+
+      if (statePressure != oldstatePressure)
+      {
+
+        oldstatePressure = statePressure;
+
+        switch (statePressure)
+        {
+        case UNDER_PRESSURE:
+          timer3 = millis();
+          break;
+
+        case OVER_PRESSURE:
+          timer4 = millis();
+          break;
+
+        case NEAR_ZERO_PRESSURE:
+          timer5 = millis();
+          break;
+        }
+      }
 
       switch (statePressure)
       {
       case UNDER_PRESSURE:
-        timer3 = millis();
+        if (millis() - timer3 > timerThresholdLOW)
+        {
+          if (statePump == LOW)
+          {
+            statePump = HIGH;
+          }
+        }
         break;
-
       case OVER_PRESSURE:
-        timer4 = millis();
+        if (millis() - timer4 > timerThresholdHIGH)
+        {
+          if (statePump == HIGH)
+          {
+            statePump = LOW;
+          }
+        }
         break;
-
       case NEAR_ZERO_PRESSURE:
-        timer5 = millis();
+        if (millis() - timer5 > 0)
+        {
+          if (statePump == LOW)
+          {
+            statePump = HIGH;
+          }
+        }
         break;
       }
-    }
 
-    switch (statePressure)
-    {
-    case UNDER_PRESSURE:
-      if (millis() - timer3 > timerThresholdLOW)
+      if (statePump != oldstatePump)
       {
-        if (statePump == LOW)
+        digitalWrite(relayPump, !statePump);
+
+        timer8 = millis();
+        oldstatePump = statePump;
+        if (mqttconnected)
         {
-          statePump = HIGH;
+          MqttStatePump();
         }
-      }
-      break;
-    case OVER_PRESSURE:
-      if (millis() - timer4 > timerThresholdHIGH)
-      {
-        if (statePump == HIGH)
+        digitalClockDisplay();
+
+        char bufPtr[11];
+
+        switch (statePump)
         {
-          statePump = LOW;
+        case HIGH:
+          pressureBeforePumpON = pressure;
+          measureCurrent();
+          // ptr = pgm_PUMP_ON;
+          snprintf_P(bufPtr, sizeof(bufPtr), pgm_PUMP_ON);
+          break;
+        case LOW:
+          //Irms = 0;
+          //dtostrf(Irms, 0, 2, bufIrms);
+          // ptr = pgm_PUMP_OFF;
+          measureCurrent();
+          snprintf_P(bufPtr, sizeof(bufPtr), pgm_PUMP_OFF);
+          break;
         }
+        // char bufPtr[11];
+        // strncpy_P(bufPtr, ptr, sizeof(bufPtr));
+        //  Serial.print(bufPtr);
+        //  Serial.print("  ");
+        //  printPressure();
+        char buf[40];
+        snprintf(buf, sizeof(buf), "%s P: %s Bar, Irms: %s Amp", bufPtr, bufPressure, bufIrms);
+        Serial.println(buf);
       }
-      break;
-    case NEAR_ZERO_PRESSURE:
-      if (millis() - timer5 > 0)
+
+      //------------- ERROR DETECTION AND DETERMINATION --------------//
+      switch (statePump)
       {
-        if (statePump == LOW)
+
+      //Pump is On
+      case HIGH:
+        //check if dry running
+        switch (statePressure)
         {
-          statePump = HIGH;
+        case NEAR_ZERO_PRESSURE:
+          if (millis() - timer5 > 3000)
+          {
+            if (monitorError1)
+            {
+              stateError1 = HIGH;
+            }
+          }
+          break;
         }
-      }
-      break;
-    }
-  }
-
-  //------------- ERROR DETECTION AND DETERMINATION --------------//
-  bool MONITOR_ALL_ERROR = true;
-
-  if (MONITOR_ALL_ERROR)
-  {
-    //--- Check Error 1 dry running
-    if (statePressure == NEAR_ZERO_PRESSURE)
-    {
-      if (millis() - timer5 >= 3000)
-      {
-        if (monitorError1)
-        {
-          stateError1 = HIGH;
-        }
-      }
-    }
-    else if (statePressure != NEAR_ZERO_PRESSURE)
-      stateError1 = LOW;
-
-    // ---- Check Error 3
-    // pump has been running too long
-    // (e.g. due to valve left opened accidentally, faulty valve etc)
-    // 1200000UL = 20 minutes
-
-    if (millis() - timer8 >= timerErr3)
-    {
-      stateError3 = HIGH;
-    }
-    else if (statePump == LOW)
-      stateError3 = LOW;
-
-    // ---- Check Error 4 - Overcurrent
-    if (CURRENT_SENSOR_INSTALLED)
-    {
-      // MUST BE CHECKED ONLY WHILE PUMP IS ON
-      if (statePump == HIGH)
-      {
-        // Pump current is very high
-        if (Irms > current_HIGH && millis() - timer8 > 250)
+        //check if pressure is not incresing
+        if (pressure <= pressureBeforePumpON && millis() - timer8 > 5000)
         {
           //statePump = LOW;
-          stateError4 = HIGH;
+          //stateError2 = HIGH;
         }
-      }
-    }
+        //check if pump has been running too long (e.g. due to valve left opened accidentally, faulty valve etc)
+        if (millis() - timer8 > 1200000)
+        { //1200000 = 20 minutes
+          stateError3 = HIGH;
+        }
 
-    // ---- Check Error 5
-    if (CURRENT_SENSOR_INSTALLED)
-    {
-      // MUST BE CHECKED ONLY WHEN PUMP IS OFF
-      if (statePump == LOW)
-      {
-        // Pump seems still running eventhough pump OFF command has been issued
-        if (digitalRead(relayPump) && Irms >= 0.4 && millis() - timer8 > 10000)
+        if (CURRENT_SENSOR_INSTALLED)
         {
-          //statePump = LOW;
-          stateError5 = HIGH;
+          // MUST BE CHECKED ONLY WHILE PUMP IS ON
+          if (statePump == HIGH)
+          {
+            // Pump current is very high
+            if (Irms > current_HIGH && millis() - timer8 > 2000)
+            {
+              //statePump = LOW;
+              stateError4 = HIGH;
+            }
+          }
+          // MUST BE CHECKED ONLY WHEN PUMP IS OFF
+          if (statePump == LOW)
+          {
+            // Pump seems still running eventhough pump OFF command has been issued
+            if (Irms > 0.2 && millis() - timer8 > 10000)
+            {
+              //statePump = LOW;
+              stateError5 = HIGH;
+            }
+          }
         }
-        else if (Irms < 0.4)
+
+        break;
+
+      //Pump is Off
+      case LOW:
+        //check if dry running
+        switch (statePressure)
         {
-          stateError5 = LOW;
+        case NEAR_ZERO_PRESSURE:
+          if (millis() - timer5 > 1000)
+          {
+            stateError1 = HIGH;
+          }
+          break;
         }
+        break;
       }
-    }
 
-    // static bool stateError1_old = 0;
-    // if (stateError1 != stateError1_old)
-    // {
-    //   stateError1_old = stateError1;
-    //   Serial.print("stateError1=");
-    //   Serial.println(stateError1);
-    // }
-
-    // static bool stateError2_old = 0;
-    // if (stateError2 != stateError2_old)
-    // {
-    //   stateError2_old = stateError2;
-    //   Serial.print("stateError2=");
-    //   Serial.println(stateError2);
-    // }
-
-    // static bool stateError3_old = 0;
-    // if (stateError3 != stateError3_old)
-    // {
-    //   stateError3_old = stateError3;
-    //   Serial.print("stateError3=");
-    //   Serial.println(stateError3);
-    // }
-
-    PRINT_ERROR();
-
-    //trap for any errors
-    if (stateError1 || stateError2 || stateError3 || stateError4 || stateError5)
-    {
-      // stateError = HIGH;
-
-      // statePump = LOW;
-
-      if (tick1000ms)
-        buzzerError();
-    }
-
-    if (stateError1 || stateError4 || stateError5)
-      statePump = LOW;
-
-    unsigned long RESETTING = 10000UL;
-
-    if (stateError != stateError_old)
-    {
-      //update error state
-      stateError_old = stateError;
-
-      if (stateError)
+      //trap for any errors
+      if (stateError1 || stateError2 || stateError3 || stateError4 || stateError5)
       {
+        stateError = HIGH;
+      }
+
+      break;
+
+    //IF ERROR STATE IS HIGH (Error is detected)
+    case HIGH:
+
+      if (statePump)
+      {
+        statePump = LOW;
+      }
+
+      switch (statePump != oldstatePump)
+      {
+
+      case HIGH:
+        oldstatePump = statePump;
+
+        digitalWrite(relayPump, !statePump);
+
+        timer8 = millis();
+
+        if (mqttconnected)
+        {
+          MqttStatePump();
+        }
+        digitalClockDisplay();
+        char bufPumpOnOff[11];
+        switch (statePump)
+        {
+        case HIGH:
+          pressureBeforePumpON = pressure;
+          //Serial.print(F("PUMP ON  "));
+          // pumpOnOff = pgm_PUMP_ON;
+          snprintf_P(bufPumpOnOff, sizeof(bufPumpOnOff), pgm_PUMP_ON);
+          break;
+        case LOW:
+          // pumpOnOff = pgm_PUMP_OFF;
+          snprintf_P(bufPumpOnOff, sizeof(bufPumpOnOff), pgm_PUMP_OFF);
+          break;
+        }
+
+        /*
+              char buf[30];
+              char bufPressure[6];
+              dtostrf(pressure, 0,2, bufPressure);
+              snprintf_P(buf, sizeof(buf), PSTR("%s  Pressure:%s"), pumpOnOff, pressure);
+              Serial.println(buf);
+            */
+        Serial.print(bufPumpOnOff);
+        Serial.print("  ");
+        printPressure();
+        break;
+      }
+
+      unsigned long RESETTING = 60000;
+
+      if (stateError != oldstateError)
+      {
+
+        //update error state
+        oldstateError = stateError;
+
         //start error timer
         timer9 = millis();
 
-        // PRINT_ERROR();
+        PRINT_ERROR();
 
         digitalClockDisplay();
         Serial.print(F("SYSTEM WILL BE RESETTED AUTOMATICALLY IN "));
         Serial.print(RESETTING / 1000);
         Serial.println(F(" SECONDS"));
       }
-    }
 
-    if (stateError)
-    {
+      buzzerError();
+
       if (millis() - timer9 <= RESETTING)
       {
         //do nothing
@@ -907,54 +997,27 @@ void loop()
           RESET_ALL();
         }
       }
+      break;
     }
+
+    /*------------- END ERROR LOGIC --------------*/
   }
-  /*------------- END ERROR LOGIC --------------*/
-
-  if (!statePump)
-    timer8 = millis();
-
-  if (statePump != oldstatePump)
+  else
   {
-    digitalWrite(relayPump, !statePump);
 
-    oldstatePump = statePump;
-    if (mqttconnected)
-    {
-      MqttStatePump();
-    }
-    digitalClockDisplay();
-
-    char bufPtr[11];
-
-    if (statePump)
-    {
-      pressureBeforePumpON = pressure;
-      measureCurrent();
-      snprintf_P(bufPtr, sizeof(bufPtr), pgm_PUMP_ON);
-    }
-    else
-    {
-      measureCurrent();
-      snprintf_P(bufPtr, sizeof(bufPtr), pgm_PUMP_OFF);
-    }
-
-    char buf[40];
-    snprintf_P(buf, sizeof(buf), PSTR("%s P: %s Bar, Irms: %s Amp"), bufPtr, bufPressure, bufIrms);
-    Serial.println(buf);
   }
 
   //---- When no error present (i.e. stateError = LOW), print all parameter every 1 second
 
   if (wifiStatus == STATION_GOT_IP && millis() - timer2 >= 1000)
-  // if (esp.GetWifiStatus() == STATION_GOT_IP && millis() - timer2 >= 1000)
   {
 
     timer2 = millis();
 
     bool PRINT = false;
-    if (pressure != pressure_old)
+    switch (pressure != pressure_old)
     {
+    case true:
       if (pressure < pressure_old)
       {
         if (PRESSURE_DIRECTION == LOW)
@@ -981,6 +1044,7 @@ void loop()
           pressure_old = pressure;
         }
       }
+      break;
     }
 
     if (stateError == HIGH)
@@ -997,7 +1061,7 @@ void loop()
     }
 
     //if (count1 != 0 && stateError == LOW && PRINT == true) {
-    // PRINT = true;
+    PRINT = true;
     if (PRINT)
     {
       char buf[128];

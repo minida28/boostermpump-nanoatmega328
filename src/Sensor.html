@@ -1,7 +1,7 @@
-  <!-- EspLink will add header here -->
-  
-  <style>
-table, th, td {
+<!-- EspLink will add header here -->
+
+<style>
+	table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
 }
@@ -9,163 +9,375 @@ th, td {
     padding: 5px;
     text-align: left;    
 }
+
+.button-success,
+        .button-error,
+        .button-warning,
+        .button-secondary {
+            color: white;
+            border-radius: 4px;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-success {
+            background: rgb(28, 184, 65); /* this is a green */
+        }
+
+        .button-error {
+            background: rgb(202, 60, 60); /* this is a maroon */
+        }
+
+        .button-warning {
+            background: rgb(255, 255, 0); /* this is an orange */
+        }
+
+        .button-secondary {
+            background: rgb(66, 184, 221); /* this is a light blue */
+        }
 </style>
-  
-  <!-- <meta name="refresh-rate" content="100" /> -->
-  
-  
-  <div class="header">
-    <h1>SENSOR</h1>
-  </div>
-  
-  
-  <!-- <div><input id="pressure" type="text" name="pressure"></div> -->
 
-  <div class="content">
-    <!-- <p hidden id="pressure" align="center" style="font-size: 800%"/> -->
-	<!-- <p hidden id="pressNearZero" align="center" style="font-size: 800%"/> -->
-	<!-- <p hidden id="pressLow" align="center" style="font-size: 800%"/> -->
-	<!-- <p hidden id="pressHigh" align="center" style="font-size: 800%"/> -->
-	<div id="chart_div" align="center" style="width: 100%; height: 100%;"></div>
+<div id="main">
 
-    <table class="pure-table pure-table-bordered" align="center" id="table"/>
-	
+	<div class="header">
+		<h1>Sensor</h1>
+		<h2>Check Sensor Readings</h2>
+	</div>
 
-<table id="table2" align="center">
-  <tr>    
-    <th>Min</th>
-    <th>cut ON</th>
-	<th style="color: red;">Pressure</th>
-	<th>cut OFF</th>
-	<th style="color: red;">Irms</th>
-  </tr>
-  <tr>    
-    <td><span id="pZero"></span></td>
-    <td><span id="cutOn"></span></td>
-	<td><span id="p" style="color: red;"></span></td>
-	<td><span id="cutOff"></span></td>
-	<td><span id="Irms" style="color: red;"></span></td>
-  </tr>
-</table>
+	<div class="pure-g">
 
-  </div>
-  
-       <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-   <script type="text/javascript">
-      google.charts.load('current', {'packages':['gauge']});
-      google.charts.setOnLoadCallback(drawChart);
+		<div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+
+			<div class="card">
+
+				<legend>
+					<h1>Sensor Readings</h1>
+				</legend>
+				<hr>
+
+				<div id="chart_div" align="center" style="width: 100%; height: 100%;"></div>
+
+				<!-- <table class="pure-table pure-table-bordered" align="center" id="table" /> -->
+
+				<table class="pure-table pure-table-horizontal" align="center">
+					<thead>
+						<tr>
+							<th>Parameter</th>
+							<th>Value</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						<tr>
+							<td>Min</td>
+							<td><span id="pZero"></span></td>
+						</tr>
+						<tr>
+							<td>cut ON</td>
+							<td><span id="pLow"></span></td>
+						</tr>
+						<tr>
+							<td style="color: red;">Pressure</td>
+							<td><span id="p" style="color: red;"></span></td>
+						</tr>
+						<tr>
+							<td>cut OFF</td>
+							<td><span id="pHigh"></span></td>
+						</tr>
+						<tr>
+							<td style="color: red;">Irms</td>
+							<td><span id="Irms" style="color: red;"></span></td>
+						</tr>
+						<tr>
+							<td>PUMP</td>
+							<td><span id="statePump"></span></td>
+						</tr>
+					</tbody>
+				</table>
+
+			</div>
+
+			<!-- <div class="card">
+				<legend>
+					<h1>Settings</h1>
+				</legend>
+				<hr>
+			</div>
+
+			<div class="card">
+				<h1>Info</h1>
+
+			</div> -->
+
+		</div>
+
+		<div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+
+			<div class="card">
+				<!-- <legend>
+					<h1>Settings</h1>
+				</legend>
+				<hr> -->
+
+				<fieldset>
+					<button id="btnMode_m" type="button" class="pure-button">Manual</button>
+					<button id="btnMode_a" type="button" class="pure-button">Automatic</button>
+				</fieldset>
+
+				<fieldset>
+					<button id="btnPump_on" type="button" class="pure-button">ON</button>
+					<button id="btnPump_off" type="button" class="pure-button">OFF</button>
+				</fieldset>
+
+
+
+			</div>
+		</div>
+
+
+
+
+	</div>
+
+
+
+</div>
+
+
+
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+	google.charts.load('current', { 'packages': ['gauge'] });
+	google.charts.setOnLoadCallback(drawChart);
 
 	var Irms;
 	var pressure;
 	var pZero;
-	var cutOn;
-	var cutOff;
+	var pLow;
+	var pHigh;
+	var mode;
+	var statePump;
 	var maxGaugePressure = 2.0;
-	
+
 	function drawChart() {
 		var data = google.visualization.arrayToDataTable([
-		  ['Label', 'Value'],
-		  ['Bar', 0.0],
+			['Label', 'Value'],
+			['Bar', 0.0],
 		]);
-		
+
 		var options = {
-		  //height: 400,
-		  //yellowFrom: minGaugePressure, yellowTo: 0.1,
-		  //greenFrom: 0.1,
-		  //greenTo: 1.0,
-		  //redFrom: 1.0,
-		  //redTo: maxGaugePressure,
-		  //yellowFrom:75, yellowTo: 90,
-		  min:0, max:maxGaugePressure,
-		  majorTicks: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, maxGaugePressure],
-		  //majorTicks: ['-0.2', '0.0', '0.2', '0.4', '0.6', '0.8', '1.0', '1.2', '1.4'],
-		  //majorTicks: ['A', 'B', 'C', 'D', 'E'],
-		  minorTicks: 2,
-		  animation:{
-			duration: 200,
-			easing: 'inAndOut',
-		  },
-		};		
-	
+			//height: 400,
+			//yellowFrom: minGaugePressure, yellowTo: 0.1,
+			//greenFrom: 0.1,
+			//greenTo: 1.0,
+			//redFrom: 1.0,
+			//redTo: maxGaugePressure,
+			//yellowFrom:75, yellowTo: 90,
+			min: 0, max: maxGaugePressure,
+			majorTicks: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, maxGaugePressure],
+			//majorTicks: ['-0.2', '0.0', '0.2', '0.4', '0.6', '0.8', '1.0', '1.2', '1.4'],
+			//majorTicks: ['A', 'B', 'C', 'D', 'E'],
+			minorTicks: 2,
+			animation: {
+				duration: 500,
+				easing: 'inAndOut',
+			},
+		};
+
 		var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
-		
+
 		//data.setValue(0, 1, pressure);
 		chart.draw(data, options);
-		
+
 		// setInterval(function() {
-			// data.setValue(0, 1, pressure);
-			// chart.draw(data, options);
+		// data.setValue(0, 1, pressure);
+		// chart.draw(data, options);
 		// }, 200);
-		
-	  // function to change data & options
-	  updateGauge = function() {
-		  // update gauge data
-		  data.setValue(0, 1, pressure);	
-		  
-		  // update gauge options
-		  options.redFrom = 0;
-		  options.redTo = pZero;
-		  options.greenFrom = pZero;
-		  options.greenTo = cutOff;
-		  options.yellowFrom = cutOff;		  
-		  options.yellowTo = maxGaugePressure;
-		   // call draw() with new data & options 
-		  chart.draw(data, options);
-	  }
+
+		// function to change data & options
+		updateGauge = function () {
+			// update gauge data
+			data.setValue(0, 1, pressure);
+
+			// update gauge options
+			options.redFrom = 0;
+			options.redTo = pZero;
+			options.greenFrom = pZero;
+			options.greenTo = pHigh;
+			options.yellowFrom = pHigh;
+			options.yellowTo = maxGaugePressure;
+			// call draw() with new data & options 
+			chart.draw(data, options);
+		}
+
+		getConfigValues("/Settings.html.json?reason=refresh");
+		getConfigValues("/Sensor.html.json?reason=refresh");
 	}
-	  
-//window.onload = function () {
-  //getConfigValues("/Pressure.html");
-  //startSocket();
-  //startEvents();
-//}
 
-//getConfigValues("/Pressure.html");
-//setInterval(getConfigValues("/Pressure.html"), 100);
-setInterval(getConfigValues, 200, "/Sensor.html.json?reason=load")
-  
-function getConfigValues(address) {
-	var req = new XMLHttpRequest();
-	if (req) {
-	req.open("GET", address, true);
-	req.addEventListener("load", reqListener);
-	req.send();
+
+
+	var updateSensor;
+
+
+	// window.onload = function () {
+	// getConfigValues("/Pressure.html");
+	// updateSensor = setInterval(getConfigValues, 200, "/Sensor.html.json?reason=load");
+	// getConfigValues("/Sensor.html.json?reason=load");
+	// startSocket();
+	// startEvents();
+	// }
+
+
+
+	//getConfigValues("/Pressure.html");
+	//setInterval(getConfigValues("/Pressure.html"), 100);
+
+	// setInterval(getConfigValues, 1000, "/Sensor.html.json?reason=load");
+
+	/* event listener */
+	// document.getElementsByName("Thing")[0].addEventListener('change', doThing);
+	// document.getElementById("p").addEventListener('change', doThing);
+
+	/* function */
+	function doThing() {
+		if (pressure !== pressure) {
+			console.error(pressure, 'Is a NaN');
+		}
+		else {
+			updateGauge();
+			// console.info('Not a NaN');
+		}
 	}
-}
 
-function reqListener () {
-  // console.log(this.responseText);
-  var json = JSON.parse(this.responseText);
-  if (json)
-  {	  
-	json = JSON.parse(this.responseText);
-	console.log(json);
-	Irms = parseFloat(json.Irms).toFixed(2);
-	pressure = parseFloat(json.p).toFixed(2);
-	pZero = parseFloat(json.pZero).toFixed(2);
-	cutOn = parseFloat(json.cutOn).toFixed(2);
-	cutOff = parseFloat(json.cutOff).toFixed(2);
-	//console.log(pressure, pZero, cutOn, cutOff);
-	document.getElementById("Irms").textContent = Irms;
-	document.getElementById("p").textContent = pressure;
-	document.getElementById("pZero").textContent = pZero;
-	document.getElementById("cutOn").textContent = cutOn;
-	document.getElementById("cutOff").textContent = cutOff;
-	
-	updateGauge();
+	// setTimeout(function () {
+	// 	getConfigValues("/Settings.html.json?reason=refresh");
+	// 	getConfigValues("/Sensor.html.json?reason=refresh");
+	// }, 1000);
 
-	// something();
-  }
-}
+	// setInterval(function () {
+	//       getConfigValues("/status/heap");
+	//       getConfigValues("/status/datetime");
+	//     }, 4000);
 
-  // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
-  function isJSON(str) {
-    try {
-        return (JSON.parse(str) && !!str);
-    } catch (e) {
-        return false;
-    }
-  }
-    </script>
-  
-</body></html>
+	function getConfigValues(address) {
+		var req = new XMLHttpRequest();
+		if (req) {
+			req.open("GET", address, true);
+			req.addEventListener("load", reqListener);
+			req.send();
+			req.timeout = 500;
+			req.ontimeout = function (e) {
+				console.log("timeout");
+				req.abort();
+				setTimeout(function () {
+					getConfigValues(address);
+				}, 200);
+			};
+		}
+	}
+
+	function reqListener() {
+		console.log(this.responseText);
+		// var json = JSON.parse(this.responseText);
+		if (isJSON(this.responseText)) {
+			var json = JSON.parse(this.responseText);
+			// console.log(json);
+
+			// check INF or NaN
+			// https://stackoverflow.com/questions/30314447/how-do-you-test-for-nan-in-javascript
+
+			if (json.hasOwnProperty('pZero')) {
+				pZero = parseFloat(json.pZero);
+				document.getElementById("pZero").textContent = pZero;
+			}
+			if (json.hasOwnProperty('pLow')) {
+				pLow = parseFloat(json.pLow);
+				document.getElementById("pLow").textContent = pLow;
+			}
+			if (json.hasOwnProperty('pHigh')) {
+				pHigh = parseFloat(json.pHigh);
+				document.getElementById("pHigh").textContent = pHigh;
+			}
+
+			if (json.hasOwnProperty('p')) {
+				pressure = parseFloat(json.p);
+				document.getElementById("p").textContent = pressure;
+
+				if (pressure !== pressure) {
+					console.error(pressure, 'Is a NaN');
+				}
+				else {
+					updateGauge();
+					// console.info('Not a NaN');
+				}
+			}
+
+			Irms = parseFloat(json.Irms);
+			mode = json.mode;
+			statePump = json.statePump;
+
+			document.getElementById("Irms").textContent = Irms;
+
+
+
+
+
+			var btnMode_m = document.getElementById("btnMode_m");
+			var btnMode_a = document.getElementById("btnMode_a");
+			var btnPump_on = document.getElementById("btnPump_on");
+			var btnPump_off = document.getElementById("btnPump_off");
+
+
+			if (statePump)
+				document.getElementById("statePump").textContent = "ON";
+			else
+				document.getElementById("statePump").textContent = "OFF";
+
+			if (mode) {
+				btnMode_a.className = "pure-button button-success";
+				btnMode_m.className = "pure-button";
+			}
+			else {
+				btnMode_m.className = "pure-button button-success";
+				btnMode_a.className = "pure-button";
+			}
+
+			if (statePump) {
+				btnPump_on.className = "pure-button button-success";
+				btnPump_off.className = "pure-button";
+			}
+			else {
+				btnPump_off.className = "pure-button button-success";
+				btnPump_on.className = "pure-button";
+			}
+
+
+
+
+
+
+
+			// clearInterval(updateSensor);
+			// updateSensor = setInterval(getConfigValues, 200, "/Sensor.html.json?reason=load");
+
+			// something();
+
+			setTimeout(function () {
+				getConfigValues("/Sensor.html.json?reason=refresh");
+			}, 200);
+		}
+	}
+
+	// https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
+	function isJSON(str) {
+		try {
+			return (JSON.parse(str) && !!str);
+		} catch (e) {
+			return false;
+		}
+	}
+</script>
+
+</body>
+
+</html>

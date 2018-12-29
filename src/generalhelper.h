@@ -4,11 +4,19 @@
 #include <Arduino.h>
 #include "timehelper.h"
 
+extern bool monitorError1;
+
 extern bool MODE;
 extern bool MODE_old;
 
 extern bool statePump;
 extern bool oldstatePump;
+
+// Error Variables
+extern bool stateError, stateError1, stateError2, stateError3, stateError4, stateError5;
+extern bool stateError_old, oldstateError1, oldstateError2, oldstateError3, oldstateError4, oldstateError5;
+
+extern uint32_t timerErr3;
 
 // Timer variables
 extern uint32_t timer1; // averaging sum pressure

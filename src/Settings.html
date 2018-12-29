@@ -1,7 +1,335 @@
-  <!-- EspLink will add header here -->
-  
-  <h1 class="header">Settings</h1>
-  <h2><div id="text"/></h2>
-  <button id="btn_on" type="button">Turn on</button>
-  <button id="btn_off" type="button">Turn off</button>
-</body></html>
+<div id="main">
+  <div class="header">
+    <h1>Settings</h1>
+    <h2>Change booster pump settings</h2>
+  </div>
+
+  <div class="pure-g">
+  <div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+
+    <div class="card">
+      <legend>
+        <h1>Settings</h1>
+      </legend>
+      <hr>
+      <div id="scanning" style="display:none;">Saving settings...
+        <div class="spinner spinner-small"></div>
+      </div>
+
+      <form id="formSettings" action="#" class="pure-form pure-g">
+
+        <div class="pure-u-1-2">
+          <label class="pure-u-1" for="pZero">Minimum Pressure (Bar)</label>
+        </div>
+        <div class="pure-u-1-2">
+          <input id="pZero" name="pZero" type="number" class="pure-input-1" step="0.01" min="0.01">
+        </div>
+
+        <div class="pure-u-1-2">
+          <label class="pure-u-1" for="pLow">Cut-ON Pressure (Bar)</label>
+        </div>
+        <div class="pure-u-1-2">
+          <input id="pLow" name="pLow" type="number" class="pure-input-1" step="0.01" min="0.1">
+        </div>
+
+        <div class="pure-u-1-2">
+          <label class="pure-u-1" for="pHigh">Cut-OFF Pressure (Bar)</label>
+        </div>
+        <div class="pure-u-1-2">
+          <input id="pHigh" name="pHigh" type="number" class="pure-input-1" step="0.01" min="0.1" max="2">
+        </div>
+
+        <div class="pure-u-1-2">
+          <label class="pure-u-1" for="tErr3">Timer Error 3</label>
+        </div>
+        <div class="pure-u-1-2">
+          <input id="tErr3" name="tErr3" type="number" class="pure-input-1" step="1" min="1" max="2147483647">
+        </div>
+
+        <div class="pure-u-1-2">
+          <label class="pure-u-1" for="monErr1">Monitor Error 1</label>
+        </div>
+        <div class="pure-u-1-2">
+          <input id="monErr1" name="monErr1" type="checkbox" class="pure-checkbox">
+        </div>
+
+        <div class="pure-u-1-2">
+          <label class="pure-u-1" for="currSor">Current Sensor Installed</label>
+        </div>
+        <div class="pure-u-1-2">
+          <input id="currSor" name="currSor" type="checkbox" class="pure-checkbox">
+        </div>
+
+
+        <div class="pure-u-1">
+          <fieldset>
+            <!-- <input id="btnSaveSettings" type="submit" value="Save!" class="pure-button button-primary"> -->
+            <!-- <a id="btnSave" class="button is-info is-block" onclick="sendConfig_1();"></a> -->
+            <a class="pure-button button-primary" onclick="sendConfig();">Save</a>
+          </fieldset>
+        </div>
+
+
+
+        <!-- <div class="pure-control-group">
+
+        <div class="pure-control-group">
+          <label for="currSor" class="pure-checkbox">Current Sensor Installed</label>
+          <input id="currSor" name="currSor" type="checkbox">
+        </div> -->
+
+      </form>
+
+
+    </div>
+
+    <div class="card">
+      <h1>System overview</h1>
+
+    </div>
+    <div class="card">
+      <h1>Info</h1>
+
+    </div>
+  </div>
+  <div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+
+    <div class="card">
+      <h1>System details</h1>
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- <script src="/combo/1.18.13?/js/ui.js"></script> -->
+
+<script type="text/javascript">
+
+  // window.onload = function () {
+  // 	getConfigValues("/Settings.html.json?reason=load");
+  // }
+
+  // setTimeout(function () {
+  //   getConfigValues("/Settings.html.json?reason=refresh");
+  // }, 1000);
+
+  function getConfigValues(address) {
+    var xhr = new XMLHttpRequest();
+    if (xhr) {
+      xhr.open("GET", address, true);
+      xhr.addEventListener("load", OnMessage);
+
+      xhr.onreadystatechange = function () {//Call a function when the state changes.
+        // if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+        //   // Request finished. Do processing here.
+        //   console.log('Request finished. Do processing here.');
+        // }
+
+        if (this.status == 200) {
+          console.log('status is', this.status);
+        }
+
+        if (this.status == 204) {
+          console.log('status is', this.status);
+        }
+
+        if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+          // Request finished. Do processing here.
+          document.getElementById('scanning').style.display = "none";
+          document.getElementById('formSettings').style.visibility = "visible";
+          console.log('Request finished. Do processing here.');
+        }
+      }
+
+      xhr.send();
+      xhr.timeout = 4000;
+      xhr.ontimeout = function (e) {
+        console.log("timeout");
+        xhr.abort();
+        setTimeout(function () {
+          getConfigValues(address);
+        }, 1000);
+      };
+    }
+  }
+
+  function OnMessage() {
+    var dataToProcess = this.responseText;
+    if (isJSON(dataToProcess)) {
+      var json = JSON.parse(dataToProcess);
+      console.log(json);
+
+      if (json.hasOwnProperty('monErr1')) {
+        document.getElementById("monErr1").checked = json.monErr1;
+        document.getElementById("currSor").checked = json.currSor;
+        document.getElementById('pZero').value = parseFloat(json.pZero).toFixed(2);
+        document.getElementById('pLow').value = parseFloat(json.pLow).toFixed(2);
+        document.getElementById('pHigh').value = parseFloat(json.pHigh).toFixed(2);
+        document.getElementById('tErr3').value = parseInt(json.tErr3);
+      }
+    }
+    else {
+      console.log("Response is not JSON", dataToProcess);
+    }
+  }
+
+  window.addEventListener("load", function () {
+    function submitForm() {
+      var XHR = new XMLHttpRequest();
+
+      // Bind the FormData object and the form element
+      var FD = new FormData(form);
+
+      // Define what happens on successful data submission
+      XHR.addEventListener("load", function (event) {
+        console.log(event.target.responseText);
+      });
+
+      // Define what happens in case of error
+      XHR.addEventListener("error", function (event) {
+        console.log('Oops! Something went wrong.');
+      });
+
+      // Set up our request
+      XHR.open("POST", "/Settings.html.json");
+
+      // The data sent is what the user provided in the form
+      XHR.send(FD);
+    }
+
+    // Access the form element...
+    var form = document.getElementById("formSettings");
+
+    // ...and take over its submit event.
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      submitForm();
+    });
+  });
+
+
+  function sendConfig() {
+    var xhr = new XMLHttpRequest();
+
+    // Define what happens on successful data submission
+    xhr.addEventListener('load', function (event) {
+      console.log('Yeah! Data sent and response loaded.');
+      console.log(event.target.responseText);
+      console.log(xhr.response.ip); // no parsing needed
+      console.log(this.response); // no parsing needed
+      console.log(xhr.response); // no parsing needed
+      // location.reload();
+      getConfigValues("/Settings.html.json?reason=refresh");
+      // window.location.href = window.location.href;
+    });
+
+
+
+    // Define what happens in case of error
+    xhr.addEventListener('error', function (event) {
+      console.error('Oops! Something goes wrong.');
+    });
+
+    xhr.open("POST", '/Settings.html.json?reason=submit', true);
+
+    xhr.setRequestHeader('accept', 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8');
+
+    xhr.timeout = 2000;
+
+    xhr.ontimeout = function (e) {
+      console.error("Timeout!!")
+      xhr.abort();
+    }
+
+    //Send the proper header information along with the request
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    // xhr.setRequestHeader("Content-Type", "text/plain");
+    // xhr.setRequestHeader("Content-Type", "multipart/form-data");
+
+    document.getElementById('scanning').style.display = "inline-flex";
+    document.getElementById('formSettings').style.visibility = "hidden";
+
+    xhr.onreadystatechange = function () {//Call a function when the state changes.
+      // if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+      //   // Request finished. Do processing here.
+      //   console.log('Request finished. Do processing here.');
+      // }
+
+      if (this.status == 200) {
+        console.log('status is', this.status);
+      }
+
+      if (this.status == 204) {
+        console.log('status is', this.status);
+      }
+
+
+
+      if (this.readyState == XMLHttpRequest.OPENED) {
+        document.getElementById('scanning').style.display = "inline-flex";
+        console.log('Request starts.');
+      }
+
+      if (this.readyState == XMLHttpRequest.DONE) {
+        // Request finished. Do processing here.
+        console.log('Request finished. Do processing here.');
+      }
+    }
+
+
+    // var configJSON = prepareConfigJSON();
+
+    // var config_str = "saveconfig=" + configJSON;
+
+    // console.log( config_str);
+
+    var monErr1Val = document.getElementById('monErr1').checked;
+    var currSorVal = document.getElementById('currSor').checked;
+    var pZeroVal = document.getElementById('pZero').value;
+    var pLowVal = document.getElementById('pLow').value;
+    var pHighVal = document.getElementById('pHigh').value;
+    var tErr3Val = document.getElementById('tErr3').value;
+
+    var config_str = "monErr1=" + monErr1Val + "&" +
+      "currSor=" + currSorVal + "&" +
+      "pZero=" + pZeroVal + "&" +
+      "pLow=" + pLowVal + "&" +
+      "pHigh=" + pHighVal + "&" +
+      "tErr3=" + tErr3Val;
+
+    console.log(config_str);
+
+    xhr.send(config_str);
+  }
+
+  function prepareConfigJSON() {
+    var monErr1 = document.getElementById('monErr1');
+    var currSor = document.getElementById('currSor');
+
+
+    var json = new Object();
+    json.monErr1 = monErr1.checked;
+    json.currSor = currSor.checked;
+    json.currSorNum = document.getElementById('currSorNum').value;
+
+    return (JSON.stringify(json));
+  }
+
+  // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
+  function isJSON(str) {
+    try {
+      return (JSON.parse(str) && !!str);
+    } catch (e) {
+      return false;
+    }
+  }
+
+
+</script>
+
+</body>
+
+</html>

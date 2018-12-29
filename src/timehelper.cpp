@@ -3,7 +3,7 @@
 time_t requestSync()
 {
 
-  Serial.print(F("NTP SYNC... "));
+  Serial.print(F("SNTP SYNC... "));
 
   if (wifiStatus != STATION_GOT_IP)
   {

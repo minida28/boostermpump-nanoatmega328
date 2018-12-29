@@ -1,10 +1,18 @@
 #include "generalhelper.h"
 
-bool MODE = 1;
-bool MODE_old = 1;
+bool monitorError1 = false;
+
+bool MODE = AUTOMATIC; // 1
+bool MODE_old = MODE;
 
 bool statePump;
 bool oldstatePump;
+
+// Error Variables
+bool stateError, stateError1, stateError2, stateError3, stateError4, stateError5;
+bool stateError_old, oldstateError1, oldstateError2, oldstateError3, oldstateError4, oldstateError5;
+
+uint32_t timerErr3 = 120000; // 120000 seconds; 20 minutes
 
 // Timer variables
 uint32_t timer1; // averaging sum pressure
