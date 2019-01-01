@@ -12,7 +12,7 @@ bool oldstatePump;
 bool stateError, stateError1, stateError2, stateError3, stateError4, stateError5;
 bool stateError_old, oldstateError1, oldstateError2, oldstateError3, oldstateError4, oldstateError5;
 
-uint32_t timerErr3 = 120000; // 120000 seconds; 20 minutes
+uint32_t timerErr3 = 1200; // 1200 seconds; 20 minutes
 
 // Timer variables
 uint32_t timer1; // averaging sum pressure
@@ -30,12 +30,3 @@ uint32_t timer11; // Update/print pressure value on LCD Display
 // uint32_t timer16s;
 uint32_t lastMsg16s;
 
-char *digitalClockDisplay()
-{
-  // digital clock display of the time
-  // sample format: 2018T00:00:00
-  static char buf[15];
-  sprintf_P(buf, PSTR("%dT%02d:%02d:%02d "), year(), hour(), minute(), second());
-  Serial.print(buf);
-  return buf;
-}

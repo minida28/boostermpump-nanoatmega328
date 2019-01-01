@@ -5,7 +5,7 @@
 #include "timehelper.h"
 #include "pressuresensor.h"
 #include "currentsensor.h"
-#include "displayhelper.h"
+// #include "displayhelper.h"
 #include "progmemhelper.h"
 #include "webserver.h"
 
@@ -28,6 +28,10 @@ extern float initialcurrent_LOW;
 extern float initialcurrent_HIGH;
 
 void PRINT_EEPROM_SETTINGS();
+void getEEPROMAddress();
 void updateEEPROM();
+void LoadConfigfromEEPROM();
+void resetEEPROM();
+void setupEEPROM();
 
 #endif

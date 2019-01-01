@@ -26,5 +26,7 @@ void mqttPublished(void *response);
 void MqttStatePump();
 void MqttStateError(bool stateError, PGM_P PROGMEM pgm_stateError);
 
+void setupMQTT();
+
 
 #endif

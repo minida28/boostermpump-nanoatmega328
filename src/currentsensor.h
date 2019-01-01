@@ -30,6 +30,7 @@ typedef enum
 
 byte read_current_state();
 
-void measureCurrent();
+int CalibrateCurrentSensor();
+float measureCurrent();
 
 #endif

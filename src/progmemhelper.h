@@ -30,26 +30,7 @@ const char pgm_error_5[] PROGMEM = "ERROR-5";
 const char pgm_TIMENOTSET[] PROGMEM = "TIME NOT SET";
 const char pgm_TIMENEEDSYNC[] PROGMEM = "TIME NEED SYNC";
 
-const char pgm_current_Sensor[] PROGMEM = "current Sensor";
-const char pgm_pressure_NEAR_ZERO [] PROGMEM = "pressure_NEAR_ZERO";
-const char pgm_pressure_LOW [] PROGMEM = "pressure_LOW";
-const char pgm_pressure_HIGH [] PROGMEM = "pressure_HIGH";
-const char pgm_current_LOW [] PROGMEM = "current_LOW";
-const char pgm_current_HIGH [] PROGMEM = "current_HIGH";
-const char pgm_page [] PROGMEM = "page";
-const char pgm_mon_Error_1 [] PROGMEM = "mon_Error_1";
 
-const char* const VAR_EEPROM[] PROGMEM =
-{
-  pgm_current_Sensor,     //0
-  pgm_pressure_NEAR_ZERO, //1
-  pgm_pressure_LOW,       //1
-  pgm_pressure_HIGH,      //2
-  pgm_current_LOW,        //3
-  pgm_current_HIGH,       //4
-  pgm_page,               //4
-  pgm_mon_Error_1         //4
-};
 
 const char ZERO [] PROGMEM = "0";
 const char FALSE [] PROGMEM = "false";

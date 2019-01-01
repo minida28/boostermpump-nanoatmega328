@@ -1,8 +1,6 @@
 #include "mqtthelper.h"
 #include "generalhelper.h"
 
-
-
 // Initialize the MQTT client
 ELClientMqtt mqtt(&esp);
 
@@ -75,8 +73,6 @@ void mqttDisconnected(void *response)
   // MQTT Data
 ********************/
 
-
-
 // Callback when an MQTT message arrives for one of our subscriptions
 void mqttData(void *response)
 {
@@ -97,7 +93,7 @@ void mqttData(void *response)
   //digitalClockDisplay();
   Serial.print(F("data="));
   Serial.println(data);
- 
+
   if (strncmp_P(topic, PSTR("cmd/boosterpump/CURRENT_SENSOR_INSTALLED"), lenTopic) == 0)
   {
     if (atoi(data) == 1 || strcmp(data, "true") == 0)
@@ -197,8 +193,6 @@ void mqttPublished(void *response)
   //Serial.println(F("MQTT published"));
 }
 
-
-
 void MqttStatePump()
 {
   if (mqttconnected)
@@ -213,8 +207,6 @@ void MqttStatePump()
   }
 }
 
-
-
 void MqttStateError(bool stateError, PGM_P PROGMEM pgm_stateError)
 {
   if (mqttconnected)
@@ -228,4 +220,40 @@ void MqttStateError(bool stateError, PGM_P PROGMEM pgm_stateError)
 
     mqtt.publish(TOPIC_BUF, buf, 0, 0);
   }
+}
+
+void setupMQTT()
+{
+  // Set-up callbacks for events and initialize with es-link.
+  mqtt.connectedCb.attach(mqttConnected);
+  mqtt.disconnectedCb.attach(mqttDisconnected);
+  mqtt.publishedCb.attach(mqttPublished);
+  mqtt.dataCb.attach(mqttData);
+  mqtt.setup();
+
+  // //Serial.println("ARDUINO: setup mqtt lwt");
+  // //mqtt.lwt("/lwt", "offline", 0, 0); //or mqtt.lwt("/lwt", "offline");
+  // // void lwt(const char* topic, const char* message, uint8_t qos=0, uint8_t retain=0);
+  // const char* lwt_topic = CB_MQTTCONNECTED;
+  // const char* lwt_payload = CB_MQTTCONNECTED;
+  // mqtt.lwt(lwt_topic, lwt_payload, 2, 1); //or mqtt.lwt("/lwt", "offline");
+
+  byte len;
+
+  //construct topic
+  len = strlen_P(CB_MQTTCONNECTED);
+  char TOPIC_BUF[len + 1];
+  sprintf_P(TOPIC_BUF, CB_MQTTCONNECTED);
+
+  //construct payload
+  len = strlen_P(pgm_DISCONNECTED);
+  char PAYLOAD_BUF[len + 1];
+  sprintf_P(PAYLOAD_BUF, pgm_DISCONNECTED);
+
+  mqtt.lwt(TOPIC_BUF, PAYLOAD_BUF, 2, 1);
+
+  // mqtt.lwt("boosterpump/mqttstatus", "DISCONNECTED", 2, 1);
+
+  digitalClockDisplay();
+  Serial.println(F("EL-MQTT ready"));
 }

@@ -33,8 +33,11 @@ typedef enum
   NEAR_ZERO_PRESSURE
 } pressureState_t;
 
+
 byte read_pressure_state();
 
 float measurePressureFAST();
+
+void CalPressureSensorConstant();
 
 #endif

@@ -6,4 +6,6 @@
 extern uint8_t wifiStatus;
 extern uint8_t wifiStatus_old;
 
+char* wifiStatusStr(uint8_t index);
+
 #endif

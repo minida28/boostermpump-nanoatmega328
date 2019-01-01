@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "generalhelper.h"
 #include "timehelper.h"
-#include "displayhelper.h"
+// #include "displayhelper.h"
 #include "eepromhelper.h"
 #include "currentsensor.h"
 #include "pressuresensor.h"
@@ -29,11 +29,9 @@ bool stateBuzzer;
 float pressureBeforePumpON;
 
 // Counter variables
-int count0; // counter for averaging sum pressure head
-int count1; // counter for comparing current pressure and old pressure
+uint32_t count0; // counter for averaging sum pressure head
+uint32_t count1; // counter for comparing current pressure and old pressure
 //int countSamplingCurrent;
-
-
 
 // LCD Backlight Variable
 bool stateBacklight;
@@ -56,39 +54,6 @@ void wifiCb(void *response)
   {
     //uint8_t status;
     res->popArg(&wifiStatus, 4);
-
-    if (wifiStatus != wifiStatus_old)
-    {
-
-      wifiStatus_old = wifiStatus;
-
-      //digitalClockDisplay();
-
-      if (wifiStatus == 0)
-      {
-        // Serial.println(F("STATION_IDLE"));
-      }
-      else if (wifiStatus == STATION_GOT_IP)
-      {
-        Serial.println(F("STATION_GOT_IP"));
-      }
-      else if (wifiStatus == STATION_CONNECTING)
-      {
-        // Serial.println(F("STATION_CONNECTING"));
-      }
-      else if (wifiStatus == STATION_WRONG_PASSWORD)
-      {
-        // Serial.println(F("STATION_WRONG_PASSWORD"));
-      }
-      else if (wifiStatus == STATION_NO_AP_FOUND)
-      {
-        // Serial.println(F("STATION_NO_AP_FOUND"));
-      }
-      else if (wifiStatus == STATION_CONNECT_FAIL)
-      {
-        // Serial.println(F("STATION_CONNECT_FAIL"));
-      }
-    }
   }
 }
 
@@ -118,7 +83,7 @@ void resetCb(void)
   webServer.setup();
 }
 
-time_t prevDisplay = 0; // when the digital clock was displayed
+
 
 void RESET_ALL()
 {
@@ -175,22 +140,6 @@ void RESET_ALL()
   return MPa * 10.0;                                // 1 MPa = 10.0 Bar
   }
 */
-
-//float measurePressure() {
-//
-//  const int pressurePin = A1;
-//  int pressureZero = 102;                       //raw voltage reading when zero pressure; normally should be 102
-//  int pressureReading;
-//  float MPa;
-//
-//  float sensorMaxPressure = 0.5;                    //in MPa; based on sensor Model, 0.5 MPa
-//  float pressureStep = sensorMaxPressure / 820.0;   // MPa per bit logic step; 820.0 is from (((1024*90%)-(1024*10%))+1);
-//
-//  pressureReading = analogRead(pressurePin);   // Range : 0..1024
-//  MPa = (pressureReading - pressureZero) * pressureStep;
-//
-//  return MPa * 10.0;                                // 1 MPa = 10.0 Bar
-//}
 
 // void MqttStatus()
 // {
@@ -475,11 +424,7 @@ void setup()
 {
   Serial.begin(57600);
 
-  lcd.begin(2, 16);
-
   // ------ PIN MODE
-  pinMode(backlight, OUTPUT);
-  digitalWrite(backlight, HIGH);
 
   pinMode(relayPump, OUTPUT);
   digitalWrite(relayPump, HIGH);
@@ -494,117 +439,42 @@ void setup()
   // Sync-up with esp-link, this is required at the start of any sketch and initializes the
   // callbacks to the wifi status change callback. The callback gets called with the initial
   // status right after Sync() below completes.
-  esp.wifiCb.attach(&wifiCb); // wifi status change callback, optional (delete if not desired)
-
-  esp.resetCb = resetCb;
+  esp.wifiCb.attach(wifiCb); // wifi status change callback, optional (delete if not desired)
 
   WebserverHandlerInit();
 
-  //esp.resetCb = resetCb;
-
+  esp.resetCb = resetCb;
   resetCb();
 
   esp.GetWifiStatus();
-
-  // Set-up callbacks for events and initialize with es-link.
-  mqtt.connectedCb.attach(mqttConnected);
-  mqtt.disconnectedCb.attach(mqttDisconnected);
-  mqtt.publishedCb.attach(mqttPublished);
-  mqtt.dataCb.attach(mqttData);
-  mqtt.setup();
-
-  // //Serial.println("ARDUINO: setup mqtt lwt");
-  // //mqtt.lwt("/lwt", "offline", 0, 0); //or mqtt.lwt("/lwt", "offline");
-  // // void lwt(const char* topic, const char* message, uint8_t qos=0, uint8_t retain=0);
-  // const char* lwt_topic = CB_MQTTCONNECTED;
-  // const char* lwt_payload = CB_MQTTCONNECTED;
-  // mqtt.lwt(lwt_topic, lwt_payload, 2, 1); //or mqtt.lwt("/lwt", "offline");
-
-  byte len;
-
-  //construct topic
-  len = strlen_P(CB_MQTTCONNECTED);
-  char TOPIC_BUF[len + 1];
-  sprintf_P(TOPIC_BUF, CB_MQTTCONNECTED);
-
-  //construct payload
-  len = strlen_P(pgm_DISCONNECTED);
-  char PAYLOAD_BUF[len + 1];
-  sprintf_P(PAYLOAD_BUF, pgm_DISCONNECTED);
-
-  mqtt.lwt(TOPIC_BUF, PAYLOAD_BUF, 2, 1);
-
-  // mqtt.lwt("boosterpump/mqttstatus", "DISCONNECTED", 2, 1);
-
-  digitalClockDisplay();
-  Serial.println(F("EL-MQTT ready"));
-
-  /*--- some variables used by EEPROMex library ---*/
-  // const int maxAllowedWrites = 10;
-  const int memBase = 0;
-
-  // start reading from position memBase (address 0) of the EEPROM. Set maximumSize to EEPROMSizeUno
-  // Writes before membase or beyond EEPROMSizeUno will only give errors when _EEPROMex_DEBUG is set
-  EEPROM.setMemPool(memBase, EEPROMSizeUno);
-
-  /*--- Always get the adresses first and in the same order ---*/
-  mem_address_current_sensor_installed = EEPROM.getAddress(sizeof(int));
-  mem_address_pressure_NEAR_ZERO = EEPROM.getAddress(sizeof(float));
-  mem_address_pressure_LOW = EEPROM.getAddress(sizeof(float));
-  mem_address_pressure_HIGH = EEPROM.getAddress(sizeof(float));
-  mem_address_current_LOW = EEPROM.getAddress(sizeof(float));
-  mem_address_current_HIGH = EEPROM.getAddress(sizeof(float));
-  mem_address_page = EEPROM.getAddress(sizeof(int));
-  mem_address_monitor_error_1 = EEPROM.getAddress(sizeof(int));
-
-  CURRENT_SENSOR_INSTALLED = EEPROM.readInt(mem_address_current_sensor_installed);
-  pressure_NEAR_ZERO = EEPROM.readFloat(mem_address_pressure_NEAR_ZERO);
-  pressure_LOW = EEPROM.readFloat(mem_address_pressure_LOW);
-  pressure_HIGH = EEPROM.readFloat(mem_address_pressure_HIGH);
-  current_LOW = EEPROM.readFloat(mem_address_current_LOW);
-  current_HIGH = EEPROM.readFloat(mem_address_current_HIGH);
-  page = EEPROM.readInt(mem_address_page);
-  monitorError1 = EEPROM.readInt(mem_address_monitor_error_1);
-
-  //Serial.print("current Sensor"); Serial.print(" \t "); Serial.print(current_sensor_installed); Serial.print(" \t "); Serial.print(mem_address_current_sensor_installed); Serial.print(" \t\t "); Serial.print(sizeof(byte)); Serial.println();
-
-  if (pressure_LOW <= 0 || pressure_HIGH <= 0 || pressure_HIGH > maxPressure || pressure_LOW >= pressure_HIGH || page == 0 || page > maxPage || CURRENT_SENSOR_INSTALLED < 0 || CURRENT_SENSOR_INSTALLED > 1 || monitorError1 < 0 || monitorError1 > 1)
+  ELClientPacket *packet;
+  Serial.print(F("Waiting for WiFi "));
+  if ((packet = esp.WaitReturn()) != NULL)
   {
-
-    Serial.println(F("Set settings in the EEPROM to default value!"));
-
-    EEPROM.updateInt(mem_address_current_sensor_installed, initialCURRENT_SENSOR_INSTALLED);
-    EEPROM.updateFloat(mem_address_pressure_NEAR_ZERO, initialpressure_NEAR_ZERO);
-    EEPROM.updateFloat(mem_address_pressure_LOW, initialpressure_LOW);
-    EEPROM.updateFloat(mem_address_pressure_HIGH, initialpressure_HIGH);
-    EEPROM.updateFloat(mem_address_current_LOW, initialcurrent_LOW);
-    EEPROM.updateFloat(mem_address_current_HIGH, initialcurrent_HIGH);
-    EEPROM.updateInt(mem_address_page, 1);
-    EEPROM.updateInt(mem_address_monitor_error_1, 1);
+    Serial.print(".");
+    Serial.println(packet->value);
   }
+  Serial.println("");
 
-  CURRENT_SENSOR_INSTALLED = EEPROM.readInt(mem_address_current_sensor_installed);
-  // CURRENT_SENSOR_INSTALLED = 0;
+  setupMQTT();
 
-  pressure_NEAR_ZERO = EEPROM.readFloat(mem_address_pressure_NEAR_ZERO);
-  pressure_LOW = EEPROM.readFloat(mem_address_pressure_LOW);
-  pressure_HIGH = EEPROM.readFloat(mem_address_pressure_HIGH);
-  current_LOW = EEPROM.readFloat(mem_address_current_LOW);
-  current_HIGH = EEPROM.readFloat(mem_address_current_HIGH);
-  page = EEPROM.readInt(mem_address_page);
-  monitorError1 = EEPROM.readInt(mem_address_monitor_error_1);
+  setupEEPROM();
 
-  //EEPROM.updateInt(mem_address_current_sensor_installed, CURRENT_SENSOR_INSTALLED);
-
-  PRINT_EEPROM_SETTINGS();
-
-  setSyncProvider(requestSync);
-  setSyncInterval(SYNC_INTERVAL_SHORT);
+  // Calibration causing 1 second delay
+  CalPressureSensorConstant();
 
   pressure = measurePressureFAST();
   dtostrf(pressure, 0, 2, bufPressure);
 
+  if (CURRENT_SENSOR_INSTALLED)
+  {
+    Serial.println(CalibrateCurrentSensor());
+    measureCurrent();
+    stateCurrent = read_current_state();
+  }
+
   // resetCb();
+  Serial.println(F("Setup completed"));
 }
 
 //static int count;
@@ -612,37 +482,11 @@ void setup()
 
 //byte TIMESTATUS;
 
-bool tick1000ms = false;
-
 void loop()
 {
   esp.Process();
 
-  tick1000ms = false;
-
-  if (now() != prevDisplay)
-  { //update the display only if time has changed
-
-    prevDisplay = now();
-
-    tick1000ms = true;
-
-    static uint8_t timeStatus_old = timeStatus();
-    if (timeStatus() != timeStatus_old)
-    {
-
-      timeStatus_old = timeStatus();
-
-      if (timeStatus() != timeSet)
-      {
-        setSyncInterval(SYNC_INTERVAL_SHORT);
-      }
-      else if (timeStatus() == timeSet)
-      {
-        setSyncInterval(SYNC_INTERVAL_LONG);
-      }
-    }
-  }
+  timeLoop();
 
   if (MODE != MODE_old)
   {
@@ -662,14 +506,12 @@ void loop()
     RESET_ALL();
   }
 
-  ProcessLCD();
-
   /*------------- START processing Pressure Head --------------*/
 
   // instantaneousPressure = measurePressure();
 
   uint32_t timeSamplingPressure = 100;
-  if (millis() - timer1 < timeSamplingPressure)
+  if (millis() - timer1 < timeSamplingPressure || count0 == 0)
   {
     if (count0 == 0)
     {
@@ -681,20 +523,33 @@ void loop()
   }
   else if (millis() - timer1 >= timeSamplingPressure)
   {
-    timer1 = millis();
-    pressure = sumPressure / count0;
-    dtostrf(pressure, 0, 2, bufPressure);
-    pressure = atof(bufPressure);
-    count0 = 0;
+    if (count0)
+    {
+      timer1 = millis();
+      pressure = sumPressure / count0;
+      dtostrf(pressure, 0, 2, bufPressure);
+      pressure = atof(bufPressure);
+      count0 = 0;
+    }
   }
+
+  if (count0 == 0)
+    statePressure = read_pressure_state();
 
   /*------------- END processing Pressure Head --------------*/
 
-  /*------------- START LOGIC PRESSURE MONITORING --------------*/
+  /*------------- START LOGIC CURRENT MONITORING --------------*/
 
-  statePressure = read_pressure_state();
-
-  stateCurrent = read_current_state();
+  if (CURRENT_SENSOR_INSTALLED)
+  {
+    // static uint32_t timerMeasureCurrent = 0;
+    if (count0 == 0)
+    {
+      Irms = measureCurrent();
+      dtostrf(Irms, 0, 2, bufIrms);
+      stateCurrent = read_current_state();
+    }
+  }
 
   /*------------- END LOGIC MOTOR CURRENT MONITORING --------------*/
 
@@ -788,7 +643,7 @@ void loop()
     // (e.g. due to valve left opened accidentally, faulty valve etc)
     // 1200000UL = 20 minutes
 
-    if (millis() - timer8 >= timerErr3)
+    if (millis() - timer8 >= timerErr3 * 1000)
     {
       stateError3 = HIGH;
     }
@@ -946,7 +801,7 @@ void loop()
 
   //---- When no error present (i.e. stateError = LOW), print all parameter every 1 second
 
-  if (wifiStatus == STATION_GOT_IP && millis() - timer2 >= 1000)
+  if ((wifiStatus == STATION_GOT_IP || mqttconnected) && millis() - timer2 >= 1000)
   // if (esp.GetWifiStatus() == STATION_GOT_IP && millis() - timer2 >= 1000)
   {
 
@@ -1108,7 +963,7 @@ void loop()
       {
         strncat_P(buf, pgm_koma_spasi, sizeof(buf));
 
-        measureCurrent();
+        // measureCurrent();
 
         if (statePump)
         {

@@ -11,6 +11,12 @@
 #define SYNC_INTERVAL_SHORT 15
 #define SYNC_INTERVAL_LONG 30 * 60
 
-time_t requestSync();
+extern bool tick1000ms;
+
+char *digitalClockDisplay();
+
+// time_t requestSync();
+
+void timeLoop();
 
 #endif

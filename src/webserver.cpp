@@ -36,11 +36,11 @@ void SensorPageRefreshCb(char *url)
   // webServer.setArgString(F("pZero"), floatToString(pressure_NEAR_ZERO));
   // webServer.setArgString(F("cutOn"), floatToString(pressure_LOW));
   // webServer.setArgString(F("cutOff"), floatToString(pressure_HIGH));
-  webServer.setArgBoolean(F("mode"), MODE);
-  webServer.setArgBoolean(F("statePump"), statePump);
-  webServer.setArgBoolean(F("err1"), stateError1);
-  webServer.setArgBoolean(F("err3"), stateError3);
-  webServer.setArgBoolean(F("err5"), stateError5);
+  webServer.setArgInt(F("mode"), MODE);
+  webServer.setArgInt(F("statePump"), statePump);
+  webServer.setArgInt(F("err1"), stateError1);
+  webServer.setArgInt(F("err3"), stateError3);
+  webServer.setArgInt(F("err5"), stateError5);
 }
 
 // page setup
@@ -61,8 +61,8 @@ void WebserverHandlerInit()
 
 void SettingsLoadAndRefreshCb(char *url)
 {
-  webServer.setArgBoolean(F("monErr1"), monitorError1);
-  webServer.setArgBoolean(F("currSor"), CURRENT_SENSOR_INSTALLED);
+  webServer.setArgInt(F("monErr1"), monitorError1);
+  webServer.setArgInt(F("currSor"), CURRENT_SENSOR_INSTALLED);
   webServer.setArgString(F("pZero"), floatToString(pressure_NEAR_ZERO));
   webServer.setArgString(F("pLow"), floatToString(pressure_LOW));
   webServer.setArgString(F("pHigh"), floatToString(pressure_HIGH));
@@ -102,7 +102,10 @@ void SettingsSubmitCb(char *field)
   if (count == 6)
   {
     updateEEPROM();
+    LoadConfigfromEEPROM();
     count = 0;
+
+    PRINT_EEPROM_SETTINGS();
   }
 }
 

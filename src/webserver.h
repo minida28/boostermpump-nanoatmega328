@@ -10,6 +10,7 @@ extern ELClientWebServer webServer;
 
 void SettingsLoadAndRefreshCb(char *url);
 void SensorPageButtonPressCb(char *btnId);
+// void SettingsSubmitCb(char *field, void * response);
 void SettingsSubmitCb(char *field);
 
 void WebserverHandlerInit();
