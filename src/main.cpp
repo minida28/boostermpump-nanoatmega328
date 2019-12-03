@@ -9,7 +9,7 @@
 #include "elclienthelper.h"
 #include "elclientcmdhelper.h"
 #include "mqtthelper.h"
-#include "webserver.h"
+// #include "webserver.h"
 #include "wifihelper.h"
 
 ////////////////////////////////////////////////
@@ -80,7 +80,7 @@ void resetCb(void)
 
   Serial.println(F("EL-Client synced!"));
 
-  webServer.setup();
+  // webServer.setup();
 }
 
 
@@ -441,11 +441,12 @@ void setup()
   // status right after Sync() below completes.
   esp.wifiCb.attach(wifiCb); // wifi status change callback, optional (delete if not desired)
 
-  WebserverHandlerInit();
-
-  esp.resetCb = resetCb;
   resetCb();
 
+  // WebserverHandlerInit();
+
+  // esp.resetCb = resetCb;
+  
   esp.GetWifiStatus();
   ELClientPacket *packet;
   Serial.print(F("Waiting for WiFi "));

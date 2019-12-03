@@ -7,7 +7,7 @@
 #include "currentsensor.h"
 // #include "displayhelper.h"
 #include "progmemhelper.h"
-#include "webserver.h"
+// #include "webserver.h"
 
 /*--- EEPROM address to store pressure & motor current settings ---*/
 extern int mem_address_current_sensor_installed;

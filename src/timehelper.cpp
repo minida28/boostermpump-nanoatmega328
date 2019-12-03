@@ -26,14 +26,14 @@ bool tick1000ms;
 //   return ntp_time;
 // }
 
-char *digitalClockDisplay()
+void digitalClockDisplay()
 {
   // digital clock display of the time
   // sample format: 2018T00:00:00
   static char buf[15];
   sprintf_P(buf, PSTR("%dT%02d:%02d:%02d "), year(), hour(), minute(), second());
   Serial.print(buf);
-  return buf;
+  // return buf;
 }
 
 void timeLoop()

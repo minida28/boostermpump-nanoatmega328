@@ -40,6 +40,6 @@ typedef enum
   AUTOMATIC
 } mode_t;
 
-char *digitalClockDisplay();
+// char *digitalClockDisplay();
 
 #endif

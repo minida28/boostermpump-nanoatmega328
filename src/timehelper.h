@@ -13,7 +13,7 @@
 
 extern bool tick1000ms;
 
-char *digitalClockDisplay();
+void digitalClockDisplay();
 
 // time_t requestSync();
 

@@ -312,10 +312,10 @@ void ELClientWebServer::processResponse(ELClientResponse *response)
         char * idPtr;
         int idLen = response->popArgPtr((void**)&idPtr);
 
-        // add terminating 0
+        // add terminating '\0'
         char id[idLen+1];
         memcpy(id, idPtr, idLen);
-        id[idLen] = 0;
+        id[idLen] = '\0';
 
         hnd->buttonCb(id);
       }
@@ -331,9 +331,9 @@ void ELClientWebServer::processResponse(ELClientResponse *response)
           int nameLen = strlen(idPtr+1);
           int valueLen = idLen - nameLen -2;
 
-          // add terminating 0
+          // add terminating '\0'
           arg_ptr = (char *)malloc(valueLen+1);
-          arg_ptr[valueLen] = 0;
+          arg_ptr[valueLen] = '\0';
           memcpy(arg_ptr, idPtr + 2 + nameLen, valueLen);
 
           hnd->setFieldCb(idPtr+1);
